@@ -1,3 +1,4 @@
+from __future__ import annotations
 '''
 Functions for Cin-Cin Game.
 '''

@@ -1,8 +1,9 @@
+from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from .database import Database
 
 if TYPE_CHECKING:
-    from .database import Database
     from .game import Game
 
 @dataclass
