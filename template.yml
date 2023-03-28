@@ -1,0 +1,20 @@
+Transform: AWS::Serverless-2016-10-31
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  AppFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: app.handler
+      Runtime: python3.10
+      Events:
+        Root:
+          Type: Api
+          Properties:
+            Path: /
+            Method: ANY
+        NonRoot:
+          Type: Api
+          Properties:
+            Path: /{proxy+}
+            Method: ANY
