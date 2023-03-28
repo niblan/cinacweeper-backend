@@ -6,7 +6,6 @@ from .move import Move
 
 @dataclass
 class GameState:
-    ended: bool
     database: Database
     gameboard = generate_board(14, 14)
     mines = set_mines(14, 14, 56, (6, 9))
