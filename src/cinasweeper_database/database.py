@@ -50,6 +50,10 @@ class Database:
         Returns the current state of a given game.
         Args:
             identifier (str): The ID of the game to retrieve the state for.
+<<<<<<< HEAD:src/cinasweeper_database/database
+=======
+
+>>>>>>> 1cb917b46857fcb4d257b2a677bb4fa5bfaf54f2:src/cinasweeper_database/database.py
         Returns:
             GameState: The GameState object representing
                 the current state of the specified game.
@@ -72,9 +76,17 @@ class Database:
         """
         Creates a new game owned by the specified User object,
         or by no one if owner is None.
+<<<<<<< HEAD:src/cinasweeper_database/database
         Args:
             owner (User | None): The User object to create the game for,
                 or None if the game should have no owner.
+=======
+
+        Args:
+            owner (User | None): The User object to create the game for,
+                or None if the game should have no owner.
+
+>>>>>>> 1cb917b46857fcb4d257b2a677bb4fa5bfaf54f2:src/cinasweeper_database/database.py
         Returns:
             Game: The newly created Game object.
         """
