@@ -41,3 +41,18 @@ class AuthManager:
         if self.validate(email):
             return email
         return None
+
+    def get_user(self, user_id: str) -> dict[str, str] | None:
+        """Get a user from the database
+
+        Args:
+            user_id (str): The id of the user
+
+        Returns:
+            dict: The user
+        """
+        try:
+            user = auth.get_user(user_id)
+        except Exception:
+            return None
+        return user
