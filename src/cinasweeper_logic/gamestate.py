@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
+from .minesweeper import generate_board, set_mines, get_info_board, flag, end_game, check_ceil, get_step
 
 if TYPE_CHECKING:
     from .database import Database
@@ -9,6 +10,7 @@ if TYPE_CHECKING:
 class GameState:
     ended: bool
     database: Database
+    gameboard: list
 
     @property
     def moves(self) -> tuple[Move]:
