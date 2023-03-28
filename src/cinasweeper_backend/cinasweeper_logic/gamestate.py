@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
-from .minesweeper import generate_board, set_mines, get_info_board, flag, end_game, check_ceil, get_step
+from .minesweeper import Minesweeper
 from .database import Database
 
 if TYPE_CHECKING:
