@@ -1,5 +1,10 @@
 """The logic of the game"""
-from .datatest import Game, GameMode, GameState, Leaderboard, Move, User
+from .game import Game
+from .gamemode import GameMode
+from .gamestate import GameState
+from .leaderboard import Leaderboard
+from .move import Move
+from .user import User
 
 __all__ = [
     "Game",

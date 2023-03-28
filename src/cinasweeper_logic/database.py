@@ -4,7 +4,11 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from .datatest import Game, GameState, Leaderboard, User, GameMode
+    from .game import Game
+    from .gamemode import GameMode
+    from .gamestate import GameState
+    from .leaderboard import Leaderboard
+    from .user import User
 
 
 class Database(Protocol):
