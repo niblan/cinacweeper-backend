@@ -1,11 +1,13 @@
 """The implementation of the redis database"""
 import datetime
-import pickle
+import json
 
+from os import environ
+from dotenv import load_dotenv
 import redis
-
+#from redisjson import RedisJson
 from ..cinasweeper_logic import Game, GameMode, GameState, Leaderboard, User
-
+load_dotenv()
 
 class Database:
     """
@@ -15,7 +17,10 @@ class Database:
     """
 
     def __init__(self) -> None:
-        self.redis_client = redis.Redis()
+        self.redis_client = redis.Redis(environ.get("DB_HOST"),
+                                        environ.get("DB_USER"),
+                                        environ.get("DB_PASSWORD")
+                                        )
 
     def get_games(self, owner: User) -> tuple[Game]:
         """
@@ -29,10 +34,13 @@ class Database:
         game_ids = self.redis_client.smembers(f"user:{owner.id}:games")
         games = []
         for game_id in game_ids:
-            game = self.redis_client.get(f"game:{game_id}")
+            game = self.redis_client.hget("games", f"{game_id}")
             if game:
-                games.append(game)
+                games.append(Game(**game))
         return tuple(games)
+
+    def get_game(self, id: str) -> Game:
+        return Game(**(self.redis_client.hget("games", f"{id}")))
 
     def get_leaderboard(self) -> Leaderboard:
         """
@@ -40,11 +48,10 @@ class Database:
         Returns:
             Leaderboard: The leaderboard object.
         """
-        leaderboard_data = self.redis_client.get("leaderboard")
-        if leaderboard_data:
-            return pickle.loads(leaderboard_data)
         return Leaderboard(self)
 
+    def get_top_games(self, num_of_games: int) -> tuple[Game]:
+        pass
     def get_game_state(self, identifier: str) -> GameState:
         """
         Returns the current state of a given game.
@@ -56,7 +63,7 @@ class Database:
         """
         game_data = self.redis_client.get(f"game:{identifier}")
         if game_data:
-            return pickle.loads(game_data)
+            return GameState(**json.loads(game_data))
         return None
 
     def save_game(self, game: Game) -> None:
@@ -65,10 +72,14 @@ class Database:
         Args:
             game (Game): The Game object to save the state for.
         """
-        game_data = pickle.dumps(game)
-        self.redis_client.set(f"game:{game.id}", game_data)
+        game_data = json.dumps(vars(game))
+        self.redis_client.hset("games", f"{game.id}", game_data)
 
-    def create_game(self, owner: User | None) -> Game:
+    def save_game_state(self, id: str, gamestate: GameState) -> None:
+        game_state = json.dumps(vars(gamestate))
+        self.redis_client.set(f"game:{id}", game_state)
+
+    def create_game(self, owner: User | None, gamemode: GameMode) -> Game:
         """
         Creates a new game owned by the specified User object,
         or by no one if owner is None.
@@ -86,8 +97,9 @@ class Database:
             owner,
             False,
             datetime.datetime.now(),
-            GameMode.ONE_V_ONE,
+            gamemode,
             self,
+            score = 0
         )
         self.save_game(game)
         if owner:

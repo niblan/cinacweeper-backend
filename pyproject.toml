@@ -1,16 +1,18 @@
 [tool.poetry]
-name = "cinasweeper-backend"
+name = "cinasweeper_backend"
 version = "0.1.0"
 description = ""
 authors = ["Your Name <you@example.com>"]
 packages = [
-    { include = "src/cinasweeper_logic" },
-    { include = "src/cinasweeper_database" },
-    { include = "src/cinasweeper_api" },
+    {include = "cinasweeper_backend", from = "src"}
 ]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+fastapi = "^0.95.0"
+firebase-admin = "^6.1.0"
+redis = "^4.5.3"
+python-dotenv = "^1.0.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
