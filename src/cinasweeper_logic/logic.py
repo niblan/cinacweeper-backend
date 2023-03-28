@@ -4,7 +4,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
-    from .datatest import Game, GameState, Leaderboard, User
+    from .datatest import Game, GameState, Leaderboard, User, GameMode
 
 
 class Database(Protocol):
@@ -27,6 +27,9 @@ class Database(Protocol):
                 A tuple containing all Game objects owned by the given User object.
         """
 
+    def get_game(self, id: str) -> Game:
+        ...
+
     def get_leaderboard(self) -> Leaderboard:
         """
         Returns the leaderboard.
@@ -34,8 +37,11 @@ class Database(Protocol):
         Returns:
             Leaderboard: The leaderboard object.
         """
+    
+    def get_top_games(self, num_of_games: int) -> tuple[Game]:
+        ...
 
-    def get_game_state(self, identifier: str) -> GameState:
+    def get_game_state(self, id: str) -> GameState:
         """
         Returns the current state of a given game.
 
@@ -54,8 +60,12 @@ class Database(Protocol):
         Args:
             game (Game): The Game object to save the state for.
         """
+        ...
 
-    def create_game(self, owner: User | None) -> Game:
+    def save_game_state(self, id: str, gamestate: GameState) -> None:
+        ...
+
+    def create_game(self, owner: User | None, gamemode: GameMode) -> Game:
         """
         Creates a new game owned by the specified User object,
         or by no one if owner is None.

@@ -54,6 +54,7 @@ class Game:
     started_time: datetime.datetime
     game_mode: GameMode
     database: Database
+    score: int
 
     @property
     def state(self) -> GameState:
@@ -78,3 +79,4 @@ class Leaderboard:
     def top_n(self, n: int = 10) -> tuple[Game]:
         #return from database
         ...
+    
