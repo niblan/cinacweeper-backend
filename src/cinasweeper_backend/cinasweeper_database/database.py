@@ -5,7 +5,6 @@ import json
 from os import environ
 from dotenv import load_dotenv
 import redis
-#from redisjson import RedisJson
 from ..cinasweeper_logic import Game, GameMode, GameState, Leaderboard, User
 load_dotenv()
 
@@ -31,16 +30,15 @@ class Database:
             tuple[Game]:
                 A tuple containing all Game objects owned by the given User object.
         """
-        game_ids = self.redis_client.smembers(f"user:{owner.id}:games")
-        games = []
-        for game_id in game_ids:
-            game = self.redis_client.hget("games", f"{game_id}")
-            if game:
-                games.append(Game(**game))
+        result = self.redis_client.hscan("games", match = f'owner:{owner.id}')
+        games = [Game(**game) for game in result]
         return tuple(games)
 
     def get_game(self, id: str) -> Game:
-        return Game(**(self.redis_client.hget("games", f"{id}")))
+        """
+        Get game_info from the hash games and turn it into a Game object
+        """
+        return Game(**json.loads((self.redis_client.hget("games", f"{id}"))))
 
     def get_leaderboard(self) -> Leaderboard:
         """
@@ -51,7 +49,10 @@ class Database:
         return Leaderboard(self)
 
     def get_top_games(self, num_of_games: int) -> tuple[Game]:
-        pass
+        result = self.redis_client.execute_command('HSCAN', 'myhash', '0', 'MATCH', '*', 'COUNT', num_of_games, 'SORT', 'BY', 'myhash:*->score', 'GET', '#', 'GET', '*', 'DESC')
+        games = [Game(**json.loads(game)) for game in result]
+        return tuple(games)
+
     def get_game_state(self, identifier: str) -> GameState:
         """
         Returns the current state of a given game.
@@ -76,6 +77,10 @@ class Database:
         self.redis_client.hset("games", f"{game.id}", game_data)
 
     def save_game_state(self, id: str, gamestate: GameState) -> None:
+        """
+        Save the state of the game using game identifier
+        
+        """
         game_state = json.dumps(vars(gamestate))
         self.redis_client.set(f"game:{id}", game_state)
 
@@ -102,6 +107,6 @@ class Database:
             score = 0
         )
         self.save_game(game)
-        if owner:
-            self.redis_client.sadd(f"user:{owner.id}:games", game.id)
+        #if owner:
+        #    self.redis_client.sadd(f"user:{owner.id}:games", game.id)
         return game
