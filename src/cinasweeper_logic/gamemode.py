@@ -1,4 +1,3 @@
-from typing import TYPE_CHECKING
 from enum import Enum
 
 class GameMode(Enum):
