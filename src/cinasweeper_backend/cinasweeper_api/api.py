@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 # фром .сіна_дейтабез імпорт датабейз
 from ..cinasweeper_database import Database
-from ..cinasweeper_logic import User # {перелік класів}
+from ..cinasweeper_logic import User, Move, Game, GameMod # {перелік класів}
 
 from .authentication import AuthManager
 
@@ -67,5 +67,9 @@ def put_game(game_id: str, jwt: str):
     user = id_and_user_from_jwt(jwt)[1]
 
     database.get_game(game_id).claim(user)
+
+@app.post("/games/{game_id}/moves")
+def post_move(game_id: str, action: int, x: int, y: int):
+    database.get_game(game_id).play_move(Move(x=x, y=y, action=action))
 
 # розібратися з імпортом дата
