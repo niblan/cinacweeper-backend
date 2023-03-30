@@ -10,6 +10,6 @@ if TYPE_CHECKING:
 class Leaderboard:
     database: Database
 
-    def top_n(self, n: int = 10) -> tuple[Game]:
+    def top_n(self, n: int = 10) -> tuple[Game, ...]:
         #return from database
         return self.database.get_top_games(n)
