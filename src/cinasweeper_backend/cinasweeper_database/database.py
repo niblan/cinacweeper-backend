@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import datetime
+import json
 import uuid
 from typing import TYPE_CHECKING
 
@@ -147,7 +148,7 @@ class RedisDatabase:
             )
             .docs
         )
-        return tuple(self.serializer.from_json(game) for game in games)
+        return tuple(self.serializer.from_json(json.loads(game.json)) for game in games)
 
     def get_game(self, identifier: str) -> Game:
         """Returns a game by its id
@@ -158,8 +159,11 @@ class RedisDatabase:
         Returns:
             Game: The game
         """
+        game = self.redis_client.json().get(f"game:{identifier}")
+        if game is None:
+            raise ValueError
         return self.serializer.from_json(
-            self.redis_client.json().get(f"game:{identifier}")
+            game
         )
 
     def get_top_games(self, num_of_games: int) -> tuple[Game, ...]:
@@ -180,7 +184,7 @@ class RedisDatabase:
             )
             .docs
         )
-        return tuple(self.serializer.from_json(game) for game in games)
+        return tuple(self.serializer.from_json(json.loads(game.json)) for game in games)
 
     def get_game_state(self, identifier: str) -> GameState:
         """Returns the current state of a given game.
@@ -192,8 +196,11 @@ class RedisDatabase:
             GameState:The GameState object representing
                 the current state of the specified game.
         """
+        state = self.redis_client.json().get(f"gamestate:{identifier}")
+        if state is None:
+            raise ValueError
         return self.serializer.state_from_json(
-            self.redis_client.json().get(f"gamestate:{identifier}")
+            state
         )
 
     def save_game_state(self, identifier: str, gamestate: GameState) -> None:
