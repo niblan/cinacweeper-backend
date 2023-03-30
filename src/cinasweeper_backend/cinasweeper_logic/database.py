@@ -1,5 +1,6 @@
 """This module contains protocol for database"""
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Protocol
 
 if TYPE_CHECKING:
@@ -18,7 +19,7 @@ class Database(Protocol):
         None
     """
 
-    def get_games(self, owner: User) -> tuple[Game]:
+    def get_games(self, owner: User) -> tuple[Game, ...]:
         """
         Returns all games owned by a given User object.
 
@@ -40,8 +41,8 @@ class Database(Protocol):
         Returns:
             Leaderboard: The leaderboard object.
         """
-    
-    def get_top_games(self, num_of_games: int) -> tuple[Game]:
+
+    def get_top_games(self, num_of_games: int) -> tuple[Game, ...]:
         ...
 
     def get_game_state(self, id: str) -> GameState:
