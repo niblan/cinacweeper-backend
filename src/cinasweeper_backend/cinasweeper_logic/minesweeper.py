@@ -24,7 +24,7 @@ def generate_board(height: int, width: int) -> list[list]:
     return [[(row, col) for col in range(width)] for row in range(height)]
 
     # set mines at the board.
-def set_mines(height: int, width: int, num_mines: int, step: tuple) -> list:
+def set_mines(height: int, width: int, num_mines: int, step: tuple[int, int]) -> list:
     '''
     Set mines at the field ignoring step`s coordinates
     :param num_mines: number of mines.
@@ -35,7 +35,7 @@ def set_mines(height: int, width: int, num_mines: int, step: tuple) -> list:
     >>> len(set_mines(8, 8, 10))
     10
     '''
-    mines = set()
+    mines: set[tuple[int, int]] = set()
     while len(mines) < num_mines:
         mines.add((randint(0, height - 1), randint(0, width - 1)))
         mines.discard(step) # ignore the coordinates
