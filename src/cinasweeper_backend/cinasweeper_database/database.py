@@ -10,51 +10,98 @@ from redis.commands.search.field import NumericField, TagField, TextField
 from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 
-from ..cinasweeper_logic import Game, GameState, Leaderboard
+from ..cinasweeper_logic import Game, GameMode, GameState, Leaderboard, User
 
 if TYPE_CHECKING:
     import redis
 
-    from ..cinasweeper_logic import GameMode, User
+    from ..cinasweeper_logic import Database
 
 
 class Serializer:
     """Serializes and deserializes games"""
 
-    # TODO: Implement these
-    # Note: make this work with RedisDatabase.setup_index
+    def __init__(self, database: Database) -> None:
+        """Initializes the serializer
+
+        Args:
+            database (Database): The database to use
+        """
+        self.database = database
+
     # TODO: consider using TypedDict instead of dict
 
     def from_json(self, json: dict) -> Game:
-        """Deserializes a game from json"""
-        return Game(json["id"], User(json["owner"],self),
-                    json["started"], json["started_time"],
-                    json["game_mode"], json["ended"], json["opponent_id "], json["score"] )
+        """Deserializes a game from json
+
+        Args:
+            json (dict): The json to deserialize
+
+        Returns:
+            Game: The deserialized game
+        """
+        return Game(
+            json["id"],
+            User(json["owner"], self.database),
+            json["started"],
+            json["started_time"],
+            json["type"],
+            json["ended"],
+            json["opponent_id "],
+            json["score"],
+        )
 
     def to_json(self, game: Game) -> dict:
-        """Serializes a game to json"""
-        game_info = { "id": game.id, "owner": game.owner.id,
-            "started":game.started,
-            "started_time":game.started_time,
-            "game_mode":game.game_mode,
+        """Serializes a game to json
+
+        Args:
+            game (Game): The game to serialize
+
+        Returns:
+            dict: The serialized game
+        """
+        return {
+            "id": game.id,
+            "owner": None if game.owner is None else game.owner.id,
+            "started": game.started,
+            "started_time": game.started_time,
+            "type": game.game_mode,
             "ended": game.ended,
             "opponent_id": game.opponent_id,
-            "score": game.score}
-
-        return game_info
+            "score": game.score,
+        }
 
     def state_from_json(self, json: dict) -> GameState:
-        """Deserializes a game state from json"""
+        """Deserializes a game state from json
+
+        Args:
+            json (dict): The json to deserialize
+
+        Returns:
+            GameState: The deserialized game state
+        """
         # Check it with the GameState
-        return GameState(database = self, gameboard = json["gameboard"], mines = json["mines"], game_info = json["game_info"])
+        return GameState(
+            database=self.database,
+            gameboard=json["gameboard"],
+            mines=json["mines"],
+            game_info=json["game_info"],
+        )
 
     def state_to_json(self, state: GameState) -> dict:
-        """Serializes a game state to json"""
-        game_state_info = {"gameboard": state.gameboard,
-                           "mines": state.mines,
-                           "game_info":state.game_info}
-        return game_state_info
+        """Serializes a game state to json
 
+        Args:
+            state (GameState): The game state to serialize
+
+        Returns:
+            dict: The serialized game state
+        """
+        return {
+            "gameboard": state.gameboard,
+            "mines": state.mines,
+            "game_info": state.game_info,
+        }
 
 
 class RedisDatabase:
@@ -67,7 +114,7 @@ class RedisDatabase:
             redis_client (redis.Redis): The redis client to use
         """
         self.redis_client = redis_client
-        self.serializer = Serializer()
+        self.serializer = Serializer(self)
 
     def setup_index(self) -> None:
         """Set up the index for the games"""
