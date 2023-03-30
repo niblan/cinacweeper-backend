@@ -16,11 +16,24 @@ class Database:
     """
 
     def __init__(self) -> None:
-        self.redis_client = redis.Redis(environ.get("DB_HOST"),
-                                        environ.get("DB_USER"),
-                                        environ.get("DB_PASSWORD")
+        self.redis_client = redis.Redis(host = environ.get("DB_HOST"),
+                                        port = int(environ.get("DB_PORT")),
+                                        password = environ.get("DB_PASSWORD")
                                         )
-
+        
+    def toJson(self, game:Game):
+        game_info = { "id": game.id,
+                      "owner": game.owner.id,
+                      "started":game.started,
+                      "started_time":game.started_time,
+                      "game_mode": game.game_mode,
+                      "score": game.score}
+        return json.dumps(game_info)
+    
+    def fromJson(self, game):
+        """Turn a json object into a game object"""
+        return Game(game["id"], User(game["owner"],self), game["started"], game["started_time"], game["game_mode"], game["score"] )
+    
     def get_games(self, owner: User) -> tuple[Game]:
         """
         Returns all games owned by a given User object.
@@ -31,6 +44,7 @@ class Database:
                 A tuple containing all Game objects owned by the given User object.
         """
         result = self.redis_client.hscan("games", match = f'owner:{owner.id}')
+        
         games = [Game(**game) for game in result]
         return tuple(games)
 
@@ -38,7 +52,7 @@ class Database:
         """
         Get game_info from the hash games and turn it into a Game object
         """
-        return Game(**json.loads((self.redis_client.hget("games", f"{id}"))))
+        return Game(self.fromJson(self.redis_client.hget("games", f"{id}")))
 
     def get_leaderboard(self) -> Leaderboard:
         """
@@ -73,7 +87,8 @@ class Database:
         Args:
             game (Game): The Game object to save the state for.
         """
-        game_data = json.dumps(vars(game))
+        game.owner = game.owner.id
+        game_data = self.toJson(game)
         self.redis_client.hset("games", f"{game.id}", game_data)
 
     def save_game_state(self, id: str, gamestate: GameState) -> None:
