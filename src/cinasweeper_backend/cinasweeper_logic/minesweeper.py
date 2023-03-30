@@ -115,7 +115,6 @@ def get_step(x, y) -> tuple:
     '''Return suitable step.'''
     return (max(0, x), max(0, y))
 
-# SET MINES
 def main(board, mines, info_board, action, coord):
     mines_left = 0
     for row in board:
@@ -135,62 +134,3 @@ def main(board, mines, info_board, action, coord):
     table = [fmt.format(*row) for row in s]
     print('\n'.join(table))
 
-def main0(self):
-    height, width = 0, 0
-    while not (height and width): # get size of a board
-        try:
-            height, width = int(input('Height: ')), int(input('Width: '))
-        except:
-            print('Enter integers!')
-    board = self.generate_board(height, width) # create board
-
-    num_mines = 0
-    while not num_mines or num_mines >= height * width: # get num of mines
-        try:
-            num_mines = int(input('Num of mines: '))
-        except:
-            print('Enter an integer!')
-    
-    mines = self.set_mines(height, width, num_mines, (6, 9)) # there is no mines at (4, 4)
-    info_board = self.get_info_board(height, width, mines)
-    
-    while True:
-        mines_left = 0
-        for row in board:
-            for ceil in row: #ceil in mines
-                if str(type(ceil)) == "<class 'tuple'>" or ceil == 'F':
-                    mines_left += 1
-        if mines_left == len(mines): # change
-            print('YOU WON!')
-            break
-        action = int(input('0 for mark/unmark a mine, 1 for make a step: '))
-        if action:
-            self.check_ceil(board, info_board, self.get_step(height, width))
-        else:
-            self.flag(board, self.get_step(height, width))
-
-        s = [[str(e) for e in row] for row in board]
-        lens = [max(map(len, col)) for col in zip(*s)]
-        fmt = '\t'.join('{{:{}}}'.format(x) for x in lens)
-        table = [fmt.format(*row) for row in s]
-        print('\n'.join(table))
-
-# if __name__ == '__main__':
-
-#     gameboard = generate_board(14, 14)
-#     mines = set_mines(14, 14, 56, (6, 9))
-#     game_info = get_info_board(14, 14, mines)
-#     while True:
-#         action = int(input('action: '))
-#         coord1 = int(input('x: '))
-#         coord2 = int(input('y: '))
-#         flag_ = main(gameboard, mines, game_info, action, (coord1, coord2))
-#         if flag_ == 'Win':
-#             print('You win!!!')
-#             break
-#         elif flag_ == 'Lose':
-#             print('You lose!!!')
-#             break
-        
-    # import doctest
-    # print(doctest.testmod())
