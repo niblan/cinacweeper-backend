@@ -39,7 +39,7 @@ class AuthManager:
             return None
         email = user["email"]
         if self.validate(email):
-            return email
+            return user
         return None
 
     def get_user(self, user_id: str) -> dict[str, str] | None:
