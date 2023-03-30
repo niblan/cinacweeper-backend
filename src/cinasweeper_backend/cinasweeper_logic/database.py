@@ -27,6 +27,9 @@ class Database(Protocol):
 
         Args:
             identifier (str): The id of the game
+
+        Raises:
+            GameNotFoundError: The game was not found.
         """
 
     def get_leaderboard(self) -> Leaderboard:
@@ -41,6 +44,12 @@ class Database(Protocol):
 
     def get_game_state(self, identifier: str) -> GameState:
         """Returns the current state of a given game.
+
+        Args:
+            identifier (str): The ID of the game to retrieve the state for.
+
+        Raises:
+            GameNotFoundError: The game was not found.
 
         Args:
             identifier (str): The ID of the game to retrieve the state for.

@@ -12,6 +12,7 @@ from redis.commands.search.indexDefinition import IndexDefinition, IndexType
 from redis.commands.search.query import Query
 
 from ..cinasweeper_logic import Game, GameMode, GameState, Leaderboard, User
+from ..cinasweeper_logic.exceptions import GameNotFoundError
 
 if TYPE_CHECKING:
     import redis
@@ -50,7 +51,8 @@ class Serializer:
             self.database,
             json["opponent_id"],
             json["score"],
-            json["ended"])
+            json["ended"],
+        )
 
     def to_json(self, game: Game) -> dict:
         """Serializes a game to json
@@ -72,11 +74,11 @@ class Serializer:
             "ended": game.ended,
         }
 
-    def state_from_json(self, json: dict) -> GameState:
+    def state_from_json(self, obj: dict) -> GameState:
         """Deserializes a game state from json
 
         Args:
-            json (dict): The json to deserialize
+            obj (dict): The json to deserialize
 
         Returns:
             GameState: The deserialized game state
@@ -84,9 +86,9 @@ class Serializer:
         # Check it with the GameState
         return GameState(
             database=self.database,
-            gameboard=json["gameboard"],
-            mines=json["mines"],
-            game_info=json["game_info"],
+            gameboard=obj["gameboard"],
+            mines=obj["mines"],
+            game_info=obj["game_info"],
         )
 
     def state_to_json(self, state: GameState) -> dict:
@@ -156,15 +158,16 @@ class RedisDatabase:
         Args:
             identifier (str): The id of the game
 
+        Raises:
+            GameNotFoundError: The game was not found.
+
         Returns:
             Game: The game
         """
         game = self.redis_client.json().get(f"game:{identifier}")
         if game is None:
-            raise ValueError
-        return self.serializer.from_json(
-            game
-        )
+            raise GameNotFoundError(identifier)
+        return self.serializer.from_json(game)
 
     def get_top_games(self, num_of_games: int) -> tuple[Game, ...]:
         """Get the global top_n games
@@ -192,16 +195,17 @@ class RedisDatabase:
         Args:
             identifier (str): The ID of the game to retrieve the state for.
 
+        Raises:
+            GameNotFoundError: The game was not found.
+
         Returns:
             GameState:The GameState object representing
                 the current state of the specified game.
         """
         state = self.redis_client.json().get(f"gamestate:{identifier}")
         if state is None:
-            raise ValueError
-        return self.serializer.state_from_json(
-            state
-        )
+            raise GameNotFoundError(identifier)
+        return self.serializer.state_from_json(state)
 
     def save_game_state(self, identifier: str, gamestate: GameState) -> None:
         """Saves a given game state to the database.
