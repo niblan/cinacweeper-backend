@@ -44,12 +44,12 @@ class Serializer:
             json["id"],
             User(json["owner"], self.database),
             json["started"],
-            json["started_time"],
-            json["type"],
-            json["ended"],
-            json["opponent_id "],
+            datetime.datetime.fromtimestamp(json["started_time"]),
+            GameMode[json["type"]],
+            self.database,
+            json["opponent_id"],
             json["score"],
-        )
+            json["ended"])
 
     def to_json(self, game: Game) -> dict:
         """Serializes a game to json
@@ -64,11 +64,11 @@ class Serializer:
             "id": game.identifier,
             "owner": None if game.owner is None else game.owner.identifier,
             "started": game.started,
-            "started_time": game.started_time,
-            "type": game.game_mode,
-            "ended": game.ended,
+            "started_time": datetime.datetime.timestamp(game.started_time),
+            "type": game.game_mode.name,
             "opponent_id": game.opponent_id,
             "score": game.score,
+            "ended": game.ended,
         }
 
     def state_from_json(self, json: dict) -> GameState:
