@@ -12,12 +12,7 @@ if TYPE_CHECKING:
 
 
 class Database(Protocol):
-    """
-    A protocol representing a database of games.
-
-    Attributes:
-        None
-    """
+    """A protocol representing a database of games."""
 
     def get_games(self, owner: User) -> tuple[Game, ...]:
         """
@@ -25,36 +20,30 @@ class Database(Protocol):
 
         Args:
             owner (User): The User object to retrieve games for.
-
-        Returns:
-            tuple[Game]:
-                A tuple containing all Game objects owned by the given User object.
         """
 
-    def get_game(self, id: str) -> Game:
-        ...
+    def get_game(self, identifier: str) -> Game:
+        """Returns a game by its id
+
+        Args:
+            identifier (str): The id of the game
+        """
 
     def get_leaderboard(self) -> Leaderboard:
-        """
-        Returns the leaderboard.
-
-        Returns:
-            Leaderboard: The leaderboard object.
-        """
+        """Returns the leaderboard."""
 
     def get_top_games(self, num_of_games: int) -> tuple[Game, ...]:
-        ...
+        """Returns the top games.
 
-    def get_game_state(self, id: str) -> GameState:
+        Args:
+            num_of_games (int): The number of games to return.
         """
-        Returns the current state of a given game.
+
+    def get_game_state(self, identifier: str) -> GameState:
+        """Returns the current state of a given game.
 
         Args:
             identifier (str): The ID of the game to retrieve the state for.
-
-        Returns:
-            GameState:The GameState object representing
-                the current state of the specified game.
         """
 
     def save_game(self, game: Game) -> None:
@@ -64,10 +53,14 @@ class Database(Protocol):
         Args:
             game (Game): The Game object to save the state for.
         """
-        ...
 
-    def save_game_state(self, id: str, gamestate: GameState) -> None:
-        ...
+    def save_game_state(self, identifier: str, gamestate: GameState) -> None:
+        """Saves a given game state to the database.
+
+        Args:
+            identifier (str): The ID of the game to save the state for.
+            gamestate (GameState): The GameState object to save.
+        """
 
     def create_game(self, owner: User | None, gamemode: GameMode) -> Game:
         """
@@ -77,7 +70,5 @@ class Database(Protocol):
         Args:
             owner (User | None): The User object to create the game for,
                 or None if the game should have no owner.
-
-        Returns:
-            Game: The newly created Game object.
+            gamemode (GameMode): The GameMode object to create the game for.
         """

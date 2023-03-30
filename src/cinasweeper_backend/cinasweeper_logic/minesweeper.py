@@ -1,7 +1,7 @@
-from __future__ import annotations
 '''
 Functions for Cin-Cin Game.
 '''
+from __future__ import annotations
 from sys import exit
 from numpy import array
 from random import randint

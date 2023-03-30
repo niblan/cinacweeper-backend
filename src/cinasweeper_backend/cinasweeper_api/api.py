@@ -27,7 +27,7 @@ manager = AuthManager()
 class Game:
     """A game object, the one sent to the client"""
 
-    id: str
+    identifier: str
     owner: str | None
     started: bool
     started_time: datetime.datetime
@@ -43,10 +43,10 @@ class Game:
         Returns:
             Game: The API game
         """
-        user = None if game.owner is None else manager.get_user(game.owner.id)
+        user = None if game.owner is None else manager.get_user(game.owner.identifier)
         username = None if user is None else user["username"]
         return Game(
-            game.id,
+            game.identifier,
             username,
             game.started,
             game.started_time,

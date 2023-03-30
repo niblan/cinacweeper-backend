@@ -61,8 +61,8 @@ class Serializer:
             dict: The serialized game
         """
         return {
-            "id": game.id,
-            "owner": None if game.owner is None else game.owner.id,
+            "id": game.identifier,
+            "owner": None if game.owner is None else game.owner.identifier,
             "started": game.started,
             "started_time": game.started_time,
             "type": game.game_mode,
@@ -139,7 +139,7 @@ class RedisDatabase:
             tuple[Game]:
                 A tuple containing all Game objects owned by the given User object.
         """
-        query = Query(owner.id).sort_by("score", asc=False)
+        query = Query(owner.identifier).sort_by("score", asc=False)
         games = (
             self.redis_client.ft()
             .search(
@@ -217,7 +217,7 @@ class RedisDatabase:
             game (Game): The Game object to save the state for.
         """
         self.redis_client.json().set(
-            f"game:{game.id}",
+            f"game:{game.identifier}",
             Path.root_path(),
             self.serializer.to_json(game),
         )
