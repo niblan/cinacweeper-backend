@@ -27,19 +27,34 @@ class Serializer:
 
     def from_json(self, json: dict) -> Game:
         """Deserializes a game from json"""
-        return Game.from_json(json)
+        return Game(json["id"], User(json["owner"],self),
+                    json["started"], json["started_time"],
+                    json["game_mode"], json["ended"], json["opponent_id "], json["score"] )
 
     def to_json(self, game: Game) -> dict:
         """Serializes a game to json"""
-        return game.to_json()
+        game_info = { "id": game.id, "owner": game.owner.id,
+            "started":game.started,
+            "started_time":game.started_time,
+            "game_mode":game.game_mode,
+            "ended": game.ended,
+            "opponent_id": game.opponent_id,
+            "score": game.score}
+
+        return game_info
 
     def state_from_json(self, json: dict) -> GameState:
         """Deserializes a game state from json"""
-        return GameState.from_json(json)
+        # Check it with the GameState
+        return GameState(database = self, gameboard = json["gameboard"], mines = json["mines"], game_info = json["game_info"])
 
     def state_to_json(self, state: GameState) -> dict:
         """Serializes a game state to json"""
-        return state.to_json()
+        game_state_info = {"gameboard": state.gameboard,
+                           "mines": state.mines,
+                           "game_info":state.game_info}
+        return game_state_info
+
 
 
 class RedisDatabase:
