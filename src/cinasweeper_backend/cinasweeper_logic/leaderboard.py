@@ -12,4 +12,4 @@ class Leaderboard:
 
     def top_n(self, n: int = 10) -> tuple[Game]:
         #return from database
-        ...
+        return self.database.get_top_games(n)
