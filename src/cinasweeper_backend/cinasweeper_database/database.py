@@ -233,7 +233,9 @@ class RedisDatabase:
             self.serializer.to_json(game),
         )
 
-    def create_game(self, owner: User | None, gamemode: GameMode) -> Game:
+    def create_game(
+        self, owner: User | None, gamemode: GameMode, opponent_id: str | None = None
+    ) -> Game:
         """Creates a new game owned by the specified User object,
         or by no one if owner is None.
 
@@ -241,11 +243,17 @@ class RedisDatabase:
             owner (User | None): The User object to create the game for,
                 or None if the game should have no owner.
             gamemode (GameMode): The GameMode object to create the game for.
+            opponent_id (str): The id of the opponent game. Defaults to None.
+                If None, the function will create an opponent for a 1v1 game.
 
         Returns:
             Game: The newly created Game object.
         """
         identifier = str(uuid.uuid4())
+        if gamemode == GameMode.ONE_V_ONE and opponent_id is None:
+            opponent_id = self.create_game(
+                None, GameMode.ONE_V_ONE, opponent_id=identifier
+            ).identifier
         game = Game(
             identifier,
             started=False,
@@ -253,7 +261,7 @@ class RedisDatabase:
             owner=owner,
             database=self,
             game_mode=gamemode,
-            opponent_id=None,
+            opponent_id=opponent_id,
             score=0,
         )
         self.save_game(game)
