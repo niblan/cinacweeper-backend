@@ -61,7 +61,6 @@ class Game:
             game.opponent_id,
         )
 
-
 @dataclass
 class GameState:
     """The state of a game"""
@@ -71,8 +70,8 @@ class GameState:
     @classmethod
     def gameboard_to_board(
         self, gameboard: list[list[int | tuple[int, int]]]
-    ) -> list[list[int | None]]:
-        ...
+    ) -> list[list[int | None]]: # save only opend ceils (tuples -> None)
+        return [[None if not isinstance(ceil, int) else ceil for ceil in row] for row in gameboard]
 
     @classmethod
     def from_logic(cls, state: LogicGameState) -> "GameState":
