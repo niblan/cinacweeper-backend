@@ -15,13 +15,13 @@ class GameState:
     """The state of a given game"""
 
     database: Database
-    gameboard: list[list[tuple[int, int]]] = field(
+    gameboard: list[list[tuple[int, int] | int]] = field(
         default_factory=lambda: generate_board(14, 14)
     )
     mines: list[tuple[int, int]] = field(
         default_factory=lambda: set_mines(14, 14, 56, (6, 9))
     )
-    game_info: list[list[int]] | None = None
+    game_info: list[list[tuple[int, int] | int]] | None = None
 
     def __post_init__(self) -> None:
         """Post init; initializes the game info"""

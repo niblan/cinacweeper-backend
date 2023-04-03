@@ -66,9 +66,13 @@ class Game:
 class GameState:
     """The state of a game"""
 
-    gameboard: list[list[tuple[int, int]]]
-    #mines: list[tuple[int, int]]
-    game_info: list[list[int]] | None
+    board: list[list[int | None]]
+
+    @classmethod
+    def gameboard_to_board(
+        self, gameboard: list[list[int | tuple[int, int]]]
+    ) -> list[list[int | None]]:
+        ...
 
     @classmethod
     def from_logic(cls, state: LogicGameState) -> "GameState":
@@ -81,9 +85,7 @@ class GameState:
             GameState: The API game state
         """
         return GameState(
-            state.gameboard,
-         #   state.mines,
-            state.game_info,
+            cls.gameboard_to_board(state.gameboard),
         )
 
 
