@@ -38,6 +38,7 @@ class Game:
     started: bool
     started_time: datetime.datetime
     game_mode: GameMode
+    opponent_id: str | None
 
     @classmethod
     def from_logic(cls, game: LogicGame) -> "Game":
@@ -50,13 +51,14 @@ class Game:
             Game: The API game
         """
         user = None if game.owner is None else manager.get_user(game.owner.identifier)
-        username = None if user is None else user["username"]
+        username = None if user is None else user.display_name
         return Game(
             game.identifier,
             username,
             game.started,
             game.started_time,
             game.game_mode,
+            game.opponent_id,
         )
 
 
@@ -65,7 +67,7 @@ class GameState:
     """The state of a game"""
 
     gameboard: list[list[tuple[int, int]]]
-    mines: list[tuple[int, int]]
+    #mines: list[tuple[int, int]]
     game_info: list[list[int]] | None
 
     @classmethod
@@ -80,7 +82,7 @@ class GameState:
         """
         return GameState(
             state.gameboard,
-            state.mines,
+         #   state.mines,
             state.game_info,
         )
 
