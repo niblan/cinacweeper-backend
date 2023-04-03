@@ -28,7 +28,7 @@ class Game:
     game_mode: GameMode
     database: Database
     opponent_id: str | None
-    score: int
+    score: int = 0
     ended: bool = False
 
     @property
@@ -60,6 +60,9 @@ class Game:
             (move.x, move.y),
         )
         if game_move in ["Win", "Lose"]:
+            if game_move == 'Win':
+                time = int((datetime.datetime.now() - self.started_time).total_seconds())
+                self.score = int(((1/time)*100)**2)
             self.ended = True
             self.database.save_game(self)
             # TODO: Add score to leaderboard
