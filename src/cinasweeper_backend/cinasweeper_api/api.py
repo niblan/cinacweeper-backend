@@ -5,7 +5,7 @@ from dataclasses import dataclass
 
 import redis
 from dotenv import load_dotenv
-from fastapi import Body, FastAPI, HTTPException
+from fastapi import Body, Depends, FastAPI, Header, HTTPException
 
 # фром .сіна_дейтабез імпорт датабейз
 from ..cinasweeper_database import Database
@@ -101,34 +101,63 @@ class GameState:
         )
 
 
-def id_and_user_from_jwt(jwt: str) -> tuple[str, User]:
-    """Get the user id and user object from a JWT
+@dataclass
+class UnauthorizedMessage:
+    """The message to send when the user is unauthorized"""
+
+    detail: str = "Bearer token missing or unknown"
+
+
+def user_from_jwt(jwt: str) -> User:
+    """Get the user object from a JWT
 
     Args:
-        jwt (jwt): The JWT to get the user id and user object from
+        jwt (str): The JWT to get the user id and user object from
 
     Raises:
         HTTPException: If the JWT is invalid
 
     Returns:
-        tuple[str, User]: The user id and user object
+        User: The user object
     """
     user_id = manager.verify(jwt)
     if not user_id:
-        raise HTTPException(404, "User not found.")
+        raise HTTPException(401, UnauthorizedMessage.detail)
 
-    return user_id["user_id"], User(user_id["user_id"], database=database)
+    return User(user_id["user_id"], database=database)
+
+
+async def get_token(
+    authorization: str = Header(default="Bearer "),
+) -> tuple[str, User]:
+    """Get the user id and user object from the authorization header
+
+    Args:
+        authorization (str): The authorization header.
+
+    Raises:
+        HTTPException: If the authorization header is invalid
+
+    Returns:
+        tuple[str, User]: The user id and user object
+    """
+    method, token = authorization.split(" ")
+    if method != "Bearer":
+        raise HTTPException(401, UnauthorizedMessage.detail)
+    return user_from_jwt(token)
 
 
 # /games post (приймає жейсон веб ток)
 # створюємо гру датабаза.create_game() повертає гейм.
-@app.post("/games", response_model=Game)
+@app.post(
+    "/games",
+    response_model=Game,
+    responses={401: dict(model=UnauthorizedMessage)},
+)
 def create_game(
-    jwt: str = Body(embed=True), gamemode: GameMode = Body(embed=True)
+    gamemode: GameMode = Body(embed=True), user: User = Depends(get_token)
 ) -> Game:
     """Create a new game"""
-    user = id_and_user_from_jwt(jwt)[1]
-
     return Game.from_logic(database.create_game(owner=user, gamemode=gamemode))
 
 
@@ -137,10 +166,14 @@ def create_game(
 # (треба написати. Метод який з геймів Артура робить моїх (забирає датабейз)).
 
 # return your games
-@app.get("/games")
-def get_games(jwt: str) -> list[Game]:
+@app.get(
+    "/games",
+    responses={401: dict(model=UnauthorizedMessage)},
+)
+def get_games(
+    user: User = Depends(get_token),
+) -> list[Game]:
     """Get your own games"""
-    user = id_and_user_from_jwt(jwt)[1]
     return [Game.from_logic(game) for game in user.games]
 
 
@@ -160,21 +193,24 @@ def get_game_info(game_id: str) -> GameState:
 
 
 # /games/{id гри} put викликаю get_game(id).claim(owner). Воно приймає жейсон веб ток
-@app.put("/games/{game_id}")
-def put_game(game_id: str, jwt: str = Body(embed=True)) -> Game:
+@app.put(
+    "/games/{game_id}",
+    responses={401: dict(model=UnauthorizedMessage)},
+)
+def put_game(game_id: str, user: User = Depends(get_token)) -> Game:
     """Claim a game; only applies to games that don't have an owner"""
-    user = id_and_user_from_jwt(jwt)[1]
 
     game = database.get_game(game_id)
     game.claim(user)
     return Game.from_logic(game)
 
 
-@app.post("/games/{game_id}/moves")
-def post_move(game_id: str, move: Move, jwt: str = Body(embed=True)) -> GameState:
+@app.post(
+    "/games/{game_id}/moves",
+    responses={401: dict(model=UnauthorizedMessage)},
+)
+def post_move(game_id: str, move: Move, user: User = Depends(get_token)) -> GameState:
     """Make a move on a specific game; you must be the owner of the game"""
-    user = id_and_user_from_jwt(jwt)[1]
-
     game = database.get_game(game_id)
     if game.owner != user:
         raise HTTPException(403, "You are not the owner of this game.")
