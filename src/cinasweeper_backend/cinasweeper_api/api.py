@@ -6,6 +6,7 @@ from dataclasses import dataclass
 import redis
 from dotenv import load_dotenv
 from fastapi import Body, Depends, FastAPI, Header, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 # фром .сіна_дейтабез імпорт датабейз
 from ..cinasweeper_database import Database
@@ -27,6 +28,13 @@ redis_client = redis.Redis(
 app = FastAPI()
 database = Database(redis_client)
 manager = AuthManager()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @dataclass
@@ -39,6 +47,7 @@ class Game:
     started_time: datetime.datetime
     game_mode: GameMode
     opponent_id: str | None
+    score: int
 
     @classmethod
     def from_logic(cls, game: LogicGame) -> "Game":
@@ -59,6 +68,7 @@ class Game:
             game.started_time,
             game.game_mode,
             game.opponent_id,
+            game.score,
         )
 
 
@@ -82,7 +92,14 @@ class GameState:
             list[list[int | None]]: The board
         """
         return [
-            [None if not isinstance(cell, int) else cell if isinstance(cell, int) else -2 for cell in row]
+            [
+                None
+                if not isinstance(cell, int)
+                else cell
+                if isinstance(cell, int)
+                else -2
+                for cell in row
+            ]
             for row in gameboard
         ]
 
@@ -184,9 +201,15 @@ def get_top_games() -> list[Game]:
     return [Game.from_logic(game) for game in database.get_leaderboard().top_n(15)]
 
 
+@app.get("/games/{game_id}")
+def get_game_info(game_id: str) -> Game:
+    """Get the game"""
+    return Game.from_logic(database.get_game(game_id))
+
+
 # /games/{id гри} інфо про стан
 # (з імпортованого викликаю get_game_state(id) з нього можу .мувз)
-@app.get("/games/{game_id}")
+@app.get("/games/{game_id}/state")
 def get_game_info(game_id: str) -> GameState:
     """Get the state of a game"""
     return GameState.from_logic(database.get_game_state(game_id))
