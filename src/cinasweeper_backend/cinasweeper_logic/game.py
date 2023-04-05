@@ -60,12 +60,13 @@ class Game:
             (move.x, move.y),
         )
         if game_move in ["Win", "Lose"]:
-            if game_move == 'Win':
-                time = int((datetime.datetime.now() - self.started_time).total_seconds())
-                self.score = int(((1/time)*100)**2)
+            if game_move == "Win":
+                time = int(
+                    (datetime.datetime.now() - self.started_time).total_seconds()
+                )
+                self.score = int(((1 / time) * 100) ** 2)
             self.ended = True
             self.database.save_game(self)
-            # TODO: Add score to leaderboard
         self.database.save_game_state(self.identifier, state)
 
     def claim(self, user: User) -> None:

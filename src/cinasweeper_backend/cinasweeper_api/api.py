@@ -61,6 +61,7 @@ class Game:
             game.opponent_id,
         )
 
+
 @dataclass
 class GameState:
     """The state of a game"""
@@ -69,9 +70,21 @@ class GameState:
 
     @classmethod
     def gameboard_to_board(
-        self, gameboard: list[list[int | tuple[int, int]]]
-    ) -> list[list[int | None]]: # save only opend ceils (tuples -> None)
-        return [[None if not isinstance(ceil, int) else ceil for ceil in row] for row in gameboard]
+        cls, gameboard: list[list[int | tuple[int, int]]]
+    ) -> list[list[int | None]]:  # save only opend ceils (tuples -> None)
+        """Convert a gameboard to a board that can be sent to the client
+        (remove all unopened cells)
+
+        Args:
+            gameboard (list[list[int | tuple[int, int]]]): The gameboard
+
+        Returns:
+            list[list[int | None]]: The board
+        """
+        return [
+            [None if not isinstance(ceil, int) else ceil for ceil in row]
+            for row in gameboard
+        ]
 
     @classmethod
     def from_logic(cls, state: LogicGameState) -> "GameState":
@@ -125,7 +138,7 @@ def create_game(
 
 # return your games
 @app.get("/games")
-def get_games(jwt: str = Body(embed=True)) -> list[Game]:
+def get_games(jwt: str) -> list[Game]:
     """Get your own games"""
     user = id_and_user_from_jwt(jwt)[1]
     return [Game.from_logic(game) for game in user.games]
