@@ -82,7 +82,7 @@ class GameState:
             list[list[int | None]]: The board
         """
         return [
-            [None if not isinstance(ceil, int) else ceil for ceil in row]
+            [None if not isinstance(cell, int) else cell if isinstance(cell, int) else -2 for cell in row]
             for row in gameboard
         ]
 
