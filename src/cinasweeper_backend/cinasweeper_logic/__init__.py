@@ -1,5 +1,6 @@
 """The logic of the game"""
 from .database import Database
+from .exceptions import GameEndedError
 from .game import Game
 from .gamemode import GameMode
 from .gamestate import GameState
@@ -15,4 +16,5 @@ __all__ = [
     "User",
     "Move",
     "Database",
+    "GameEndedError",
 ]
