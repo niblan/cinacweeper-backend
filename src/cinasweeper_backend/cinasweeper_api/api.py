@@ -11,8 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # фром .сіна_дейтабез імпорт датабейз
 from ..cinasweeper_database import Database
 from ..cinasweeper_logic import Game as LogicGame  # {перелік класів}
-from ..cinasweeper_logic import GameMode
-from ..cinasweeper_logic import GameEndedError
+from ..cinasweeper_logic import GameEndedError, GameMode
 from ..cinasweeper_logic import GameState as LogicGameState
 from ..cinasweeper_logic import Move, User
 from .authentication import AuthManager
@@ -81,13 +80,13 @@ class GameState:
 
     @classmethod
     def gameboard_to_board(
-        cls, gameboard: list[list[int | tuple[int, int]]]
+        cls, state: LogicGameState, full: bool = False
     ) -> list[list[int | None]]:  # save only opend ceils (tuples -> None)
         """Convert a gameboard to a board that can be sent to the client
         (remove all unopened cells)
 
         Args:
-            gameboard (list[list[int | tuple[int, int]]]): The gameboard
+            state (LogicGameState): The gameboard
 
         Returns:
             list[list[int | None]]: The board
@@ -95,27 +94,26 @@ class GameState:
         return [
             [
                 None
-                if not isinstance(cell, int)
-                else cell
-                if isinstance(cell, int)
-                else -2
+                if isinstance(cell, list)
+                else (-2 if isinstance(cell, str) else cell)
                 for cell in row
             ]
-            for row in gameboard
+            for row in (state.game_info if full else state.gameboard)
         ]
 
     @classmethod
-    def from_logic(cls, state: LogicGameState) -> "GameState":
+    def from_logic(cls, state: LogicGameState, full: bool = False) -> "GameState":
         """Convert a logic game to the API game state
 
         Args:
             state (LogicGameState): The logic game state
+            full (bool): Whether to send the full board or not.
 
         Returns:
             GameState: The API game state
         """
         return GameState(
-            cls.gameboard_to_board(state.gameboard),
+            cls.gameboard_to_board(state, full),
         )
 
 
@@ -213,7 +211,8 @@ def get_game_info(game_id: str) -> Game:
 @app.get("/games/{game_id}/state")
 def get_game_info(game_id: str) -> GameState:
     """Get the state of a game"""
-    return GameState.from_logic(database.get_game_state(game_id))
+    game = database.get_game(game_id)
+    return GameState.from_logic(game.state, game.ended)
 
 
 # /games/{id гри} put викликаю get_game(id).claim(owner). Воно приймає жейсон веб ток
@@ -243,7 +242,7 @@ def post_move(game_id: str, move: Move, user: User = Depends(get_token)) -> Game
     except GameEndedError:
         raise HTTPException(409, "Game over.")
 
-    return GameState.from_logic(game.state)
+    return GameState.from_logic(game.state, game.ended)
 
 
 # розібратися з імпортом дата

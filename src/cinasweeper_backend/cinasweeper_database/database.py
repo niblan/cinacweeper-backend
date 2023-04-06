@@ -44,7 +44,7 @@ class Serializer:
         """
         return Game(
             json["id"],
-            User(json["owner"], self.database),
+            None if json["owner"] is None else User(json["owner"], self.database),
             json["started"],
             datetime.datetime.fromtimestamp(json["started_time"]),
             GameMode[json["type"]],
