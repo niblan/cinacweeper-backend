@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from ..cinasweeper_database import Database
 from ..cinasweeper_logic import Game as LogicGame  # {перелік класів}
 from ..cinasweeper_logic import GameMode
+from ..cinasweeper_logic import GameEndedError
 from ..cinasweeper_logic import GameState as LogicGameState
 from ..cinasweeper_logic import Move, User
 from .authentication import AuthManager
@@ -237,8 +238,10 @@ def post_move(game_id: str, move: Move, user: User = Depends(get_token)) -> Game
     game = database.get_game(game_id)
     if game.owner != user:
         raise HTTPException(403, "You are not the owner of this game.")
-
-    game.play_move(move)
+    try:
+        game.play_move(move)
+    except GameEndedError:
+        raise HTTPException(409, "Game over.")
 
     return GameState.from_logic(game.state)
 
