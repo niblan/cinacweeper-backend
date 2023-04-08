@@ -15,3 +15,6 @@ class GameNotFoundError(Exception):
             identifier (str): The id of the game that was not found
         """
         super().__init__(f"Game with id {identifier} not found")
+
+class GameNotStarted(Exception):
+    """The game was not started"""

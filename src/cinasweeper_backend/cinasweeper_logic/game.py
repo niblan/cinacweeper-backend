@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from .exceptions import GameEndedError
+from .exceptions import GameEndedError, GameNotStarted
 from .minesweeper import main
 
 if TYPE_CHECKING:
@@ -23,11 +23,11 @@ class Game:
 
     identifier: str
     owner: User | None
-    started: bool
     started_time: datetime.datetime
     game_mode: GameMode
     database: Database
     opponent_id: str | None
+    started: bool = False
     score: int = 0
     ended: bool = False
 
@@ -51,6 +51,8 @@ class Game:
         """
         if self.ended:
             raise GameEndedError
+        if not self.started:
+            raise GameNotStarted
         state = self.state
         game_move = main(
             state.gameboard,
@@ -78,4 +80,10 @@ class Game:
         """
         if self.owner is None:
             self.owner = user
+            self.started = True
+            self.started_time = datetime.datetime.now()
+            if self.opponent_id is not None:
+                opponent_game = self.database.get_game(self.opponent_id)
+                opponent_game.started = True
+                opponent_game.started_time = datetime.datetime.now()
         self.database.save_game(self)

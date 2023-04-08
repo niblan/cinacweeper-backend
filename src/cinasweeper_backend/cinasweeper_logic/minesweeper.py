@@ -128,9 +128,3 @@ def main(board, mines, info_board, action, coord):
             return 'Lose'
     else:
         flag(board, get_step(coord[0], coord[1]))
-    s = [[str(e) for e in row] for row in board]
-    lens = [max(map(len, col)) for col in zip(*s)]
-    fmt = '\t'.join('{{:{}}}'.format(x) for x in lens)
-    table = [fmt.format(*row) for row in s]
-    print('\n'.join(table))
-
