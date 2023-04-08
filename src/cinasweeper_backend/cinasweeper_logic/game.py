@@ -77,15 +77,23 @@ class Game:
 
         Args:
             user (User): The user to assign the game to.
+
+        Raises:
+            SelfPlayerException: If the user is already the owner of the opponent game.
         """
-        if self.identifier == self.opponent_id:
+        if self.owner is not None or self.opponent_id is None:
+            return
+
+        opponent_game = self.database.get_game(self.opponent_id)
+
+        if opponent_game.owner and user.identifier == opponent_game.owner.identifier:
             raise SelfPlayerException
-        if self.owner is None:
-            self.owner = user
-            self.started = True
-            self.started_time = datetime.datetime.now()
-            if self.opponent_id is not None:
-                opponent_game = self.database.get_game(self.opponent_id)
-                opponent_game.started = True
-                opponent_game.started_time = datetime.datetime.now()
+
+        opponent_game.started = True
+        opponent_game.started_time = datetime.datetime.now()
+        self.database.save_game(opponent_game)
+
+        self.owner = user
+        self.started = True
+        self.started_time = datetime.datetime.now()
         self.database.save_game(self)
