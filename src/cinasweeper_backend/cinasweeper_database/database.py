@@ -86,9 +86,10 @@ class Serializer:
         # Check it with the GameState
         return GameState(
             database=self.database,
-            gameboard=obj["gameboard"],
-            mines=obj["mines"],
-            game_info=obj["game_info"],
+            gameboard=obj.get("gameboard"),
+            mines=obj.get("mines"),
+            game_info=obj.get("game_info"),
+            zeros=obj.get("zeros", []),
         )
 
     def state_to_json(self, state: GameState) -> dict:
@@ -104,6 +105,7 @@ class Serializer:
             "gameboard": state.gameboard,
             "mines": state.mines,
             "game_info": state.game_info,
+            "zeros": state.zeros,
         }
 
 

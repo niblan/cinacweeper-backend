@@ -19,6 +19,7 @@ class GameState:
     gameboard: list[list[tuple[int, int] | int]] | None = None
     mines: list[tuple[int, int]] | None = None
     game_info: list[list[tuple[int, int] | int]] | None = None
+    zeros: list = field(default_factory=list)
 
     def play_move(self, move: Move) -> str:
         """Plays a move on the gameboard
@@ -37,6 +38,7 @@ class GameState:
             self.gameboard,
             self.mines,
             self.game_info,
+            self.zeros,
             move.action,
             (move.x, move.y),
         )

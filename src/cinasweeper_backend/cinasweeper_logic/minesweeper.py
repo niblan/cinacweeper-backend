@@ -6,8 +6,6 @@ from __future__ import annotations
 from random import randint
 from sys import exit
 
-zeros = []
-
 
 # generate board with indexes and without mines.
 def generate_board(height: int, width: int) -> list[list]:
@@ -103,13 +101,12 @@ def end_game(board: list[list], info_board: list[list]):
     # check ceil (if 0 then...)
 
 
-def check_ceil(board: list[list], info_board: list[list], step: tuple):
+def check_ceil(board: list[list], info_board: list[list], step: tuple, zeros):
     """
     Set a value to the ceil.
     Return None.
     """
     if not info_board[step[0]][step[1]]:  # if 0 open 0s around
-        global zeros
         board[step[0]][step[1]] = 0
         zeros.append(step)  # mark the ceil like already checked
         for y in range(-1, 2):
@@ -126,7 +123,7 @@ def check_ceil(board: list[list], info_board: list[list], step: tuple):
                             and (step[0] + y, step[1] + x) not in zeros
                         ):
                             check_ceil(
-                                board, info_board, (step[0] + y, step[1] + x)
+                                board, info_board, (step[0] + y, step[1] + x), zeros
                             )  # recurseve check ceils around
     elif info_board[step[0]][step[1]] == -1:  # it is a mine
         return "LOST"
@@ -142,7 +139,7 @@ def get_step(x, y) -> tuple:
     return (max(0, x), max(0, y))
 
 
-def main(board, mines, info_board, action, coord):
+def main(board, mines, info_board, zeros, action, coord):
     mines_left = 0
     for row in board:
         for ceil in row:  # ceil in mines
@@ -151,7 +148,7 @@ def main(board, mines, info_board, action, coord):
     if mines_left == len(mines):  # change
         return "Win"
     if action:
-        if check_ceil(board, info_board, get_step(coord[0], coord[1])) == "LOST":
+        if check_ceil(board, info_board, get_step(coord[0], coord[1]), zeros) == "LOST":
             return "Lose"
     else:
         flag(board, get_step(coord[0], coord[1]))
