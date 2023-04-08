@@ -106,6 +106,8 @@ class GameState:
         Returns:
             List[List[Optional[int]]]: The board
         """
+        if state.gameboard is None:
+            return [[None] * 14] * 14
         return [
             [
                 None

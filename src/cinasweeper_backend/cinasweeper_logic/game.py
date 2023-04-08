@@ -7,7 +7,6 @@ from typing import TYPE_CHECKING
 
 from .exceptions import (GameEndedError, GameNotStartedError,
                          PlayingAgainstSelfError)
-from .minesweeper import main
 
 if TYPE_CHECKING:
     import datetime
@@ -59,13 +58,7 @@ class Game:
         if not self.started:
             raise GameNotStartedError
         state = self.state
-        game_move = main(
-            state.gameboard,
-            state.mines,
-            state.game_info,
-            move.action,
-            (move.x, move.y),
-        )
+        game_move = state.play_move(move)
         self.database.save_game_state(self.identifier, state)
         if game_move in ["Win", "Lose"]:
             if game_move == "Win":
@@ -86,7 +79,8 @@ class Game:
             user (User): The user to assign the game to.
 
         Raises:
-            SelfPlayerException: If the user is already the owner of the opponent game.
+            PlayingAgainstSelfError:
+                If the user is already the owner of the opponent game.
         """
         if self.owner is not None or self.opponent_id is None:
             return
