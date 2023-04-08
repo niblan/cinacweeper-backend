@@ -1,10 +1,11 @@
 """The API itself"""
 import datetime
+import json
 import os
 from dataclasses import dataclass
+from typing import List, Optional
 
 import redis
-from dotenv import load_dotenv
 from fastapi import Body, Depends, FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -16,13 +17,32 @@ from ..cinasweeper_logic import GameState as LogicGameState
 from ..cinasweeper_logic import Move, User
 from .authentication import AuthManager
 
-load_dotenv()
-host = os.getenv("REDIS_HOST")
-port = os.getenv("REDIS_PORT")
+
+def get_conf_value(key: str) -> str:
+    """Get a value from the config file
+
+    Args:
+        key (str): The key to get the value from
+
+    Raises:
+        KeyError: If the key doesn't exist
+
+    Returns:
+        str: The value
+    """
+    try:
+        with open("environment.json", "r") as file:
+            return json.load(file)[key]
+    except FileNotFoundError:
+        return os.getenv(key)
+
+
+host = get_conf_value("REDIS_HOST")
+port = get_conf_value("REDIS_PORT")
 redis_client = redis.Redis(
     host=host if host else "localhost",
     port=int(port) if port and port.isdigit() else 6379,
-    password=os.getenv("REDIS_PASSWORD"),
+    password=get_conf_value("REDIS_PASSWORD"),
     db=0,
 )
 app = FastAPI()
@@ -42,11 +62,11 @@ class Game:
     """A specific game"""
 
     identifier: str
-    owner: str | None
+    owner: Optional[str]
     started: bool
     started_time: datetime.datetime
     game_mode: GameMode
-    opponent_id: str | None
+    opponent_id: Optional[str]
     score: int
 
     @classmethod
@@ -76,12 +96,12 @@ class Game:
 class GameState:
     """The state of a game"""
 
-    board: list[list[int | None]]
+    board: List[List[Optional[int]]]
 
     @classmethod
     def gameboard_to_board(
         cls, state: LogicGameState, full: bool = False
-    ) -> list[list[int | None]]:  # save only opend ceils (tuples -> None)
+    ) -> List[List[Optional[int]]]:  # save only opend ceils (tuples -> None)
         """Convert a gameboard to a board that can be sent to the client
         (remove all unopened cells)
 
@@ -89,7 +109,7 @@ class GameState:
             state (LogicGameState): The gameboard
 
         Returns:
-            list[list[int | None]]: The board
+            List[List[Optional[int]]]: The board
         """
         return [
             [
@@ -145,7 +165,7 @@ def user_from_jwt(jwt: str) -> User:
 
 async def get_token(
     authorization: str = Header(default="Bearer "),
-) -> tuple[str, User]:
+) -> User:
     """Get the user id and user object from the authorization header
 
     Args:
@@ -155,7 +175,7 @@ async def get_token(
         HTTPException: If the authorization header is invalid
 
     Returns:
-        tuple[str, User]: The user id and user object
+        User: The user object
     """
     method, token = authorization.split(" ")
     if method != "Bearer":
@@ -188,14 +208,14 @@ def create_game(
 )
 def get_games(
     user: User = Depends(get_token),
-) -> list[Game]:
+) -> List[Game]:
     """Get your own games"""
     return [Game.from_logic(game) for game in user.games]
 
 
 # /leaders_board get ретурнить список геймів
 @app.get("/leaders_board")
-def get_top_games() -> list[Game]:
+def get_top_games() -> List[Game]:
     """Get the global top games"""
     return [Game.from_logic(game) for game in database.get_leaderboard().top_n(15)]
 
