@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 # фром .сіна_дейтабез імпорт датабейз
 from ..cinasweeper_database import Database
+from ..cinasweeper_logic import CellAlreadyOpenError
 from ..cinasweeper_logic import Game as LogicGame  # {перелік класів}
 from ..cinasweeper_logic import GameEndedError, GameMode, GameNotStartedError
 from ..cinasweeper_logic import GameState as LogicGameState
@@ -262,7 +263,9 @@ def post_move(game_id: str, move: Move, user: User = Depends(get_token)) -> Move
     except GameEndedError:
         raise HTTPException(409, "Game over.")
     except GameNotStartedError:
-        raise HTTPException(404, "Game is not started.")
+        raise HTTPException(409, "Game is not started.")
+    except CellAlreadyOpenError:
+        raise HTTPException(409, "Cell already open.")
 
     state = GameState.from_logic(game.state, game.ended)
     return MoveResult(state, game_changed)
