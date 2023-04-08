@@ -1,12 +1,13 @@
 Transform: AWS::Serverless-2016-10-31
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 Resources:
   AppFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: .
       Handler: app.handler
-      Runtime: python3.10
+      Runtime: python3.8
+      Timeout: 10
       Events:
         Root:
           Type: Api
