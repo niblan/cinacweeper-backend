@@ -49,6 +49,7 @@ class Game:
 
         Raises:
             GameEndedError: If the game has already ended.
+            GameNotStartedError: If the game has not started yet.
 
         Returns:
             bool: True if the state of the game has changed, False otherwise.
