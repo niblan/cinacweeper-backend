@@ -149,11 +149,13 @@ def check_win(
     return flags_on_mines == len(mines)
 
 
-def main(board, mines, info_board, zeros, action, coord):
+def main(board, mines, info_board, zeros, action, coord: tuple[int, int]):
     if action:
         if check_ceil(board, info_board, get_step(coord[0], coord[1]), zeros) == "LOST":
             return "Lose"
     else:
+        if isinstance(board[coord[0]][coord[1]], int):
+            return "Open"
         flag(board, get_step(coord[0], coord[1]))
         if check_win(board, info_board, mines):
             return "Win"
