@@ -95,7 +95,6 @@ def end_game(board: list[list], info_board: list[list]):
     lens = [max(map(len, col)) for col in zip(*s)]
     fmt = "\t".join("{{:{}}}".format(x) for x in lens)
     table = [fmt.format(*row) for row in s]
-    print("\n".join(table))  # show board
     exit()  # GET TO THE MEIN PAGE
 
     # check ceil (if 0 then...)
@@ -139,16 +138,22 @@ def get_step(x, y) -> tuple:
     return (max(0, x), max(0, y))
 
 
+def check_win(
+    board: list[list], info_board: list[list], mines: list[list[int]]
+) -> bool:
+    flags_on_mines = 0
+    for x, row in enumerate(board):
+        for y, ceil in enumerate(row):  # ceil in mines
+            if ceil == "F" and [x, y] in mines:
+                flags_on_mines += 1
+    return flags_on_mines == len(mines)
+
+
 def main(board, mines, info_board, zeros, action, coord):
-    mines_left = 0
-    for row in board:
-        for ceil in row:  # ceil in mines
-            if str(type(ceil)) == "<class 'tuple'>" or ceil == "F":
-                mines_left += 1
-    if mines_left == len(mines):  # change
-        return "Win"
     if action:
         if check_ceil(board, info_board, get_step(coord[0], coord[1]), zeros) == "LOST":
             return "Lose"
     else:
         flag(board, get_step(coord[0], coord[1]))
+        if check_win(board, info_board, mines):
+            return "Win"
