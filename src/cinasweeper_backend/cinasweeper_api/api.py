@@ -12,9 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 # фром .сіна_дейтабез імпорт датабейз
 from ..cinasweeper_database import Database
 from ..cinasweeper_logic import Game as LogicGame  # {перелік класів}
-from ..cinasweeper_logic import GameEndedError, GameMode, GameNotStarted
+from ..cinasweeper_logic import GameEndedError, GameMode, GameNotStartedError
 from ..cinasweeper_logic import GameState as LogicGameState
-from ..cinasweeper_logic import Move, SelfPlayerException, User
+from ..cinasweeper_logic import Move, PlayingAgainstSelfError, User
 from .authentication import AuthManager
 
 
@@ -65,6 +65,7 @@ class Game:
     game_mode: GameMode
     opponent_id: Optional[str]
     score: int
+    ended: bool
 
     @classmethod
     def from_logic(cls, game: LogicGame) -> "Game":
@@ -84,6 +85,7 @@ class Game:
             game.game_mode,
             game.opponent_id,
             game.score,
+            game.ended,
         )
 
 
@@ -229,7 +231,10 @@ def put_game(game_id: str, user: User = Depends(get_token)) -> Game:
     """Claim a game; only applies to games that don't have an owner"""
 
     game = database.get_game(game_id)
-    game.claim(user)
+    try:
+        game.claim(user)
+    except PlayingAgainstSelfError:
+        raise HTTPException(400, "You can`t play against yourself.")
     return Game.from_logic(game)
 
 
@@ -246,9 +251,7 @@ def post_move(game_id: str, move: Move, user: User = Depends(get_token)) -> Game
         game.play_move(move)
     except GameEndedError:
         raise HTTPException(409, "Game over.")
-    except GameNotStarted:
+    except GameNotStartedError:
         raise HTTPException(404, "Game is not started.")
-    except SelfPlayerException:
-        raise HTTPException(400, "You can`t play against yourself.")
 
     return GameState.from_logic(game.state, game.ended)

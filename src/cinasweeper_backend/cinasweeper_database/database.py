@@ -43,15 +43,15 @@ class Serializer:
             Game: The deserialized game
         """
         return Game(
-            json["id"],
-            None if json["owner"] is None else User(json["owner"], self.database),
-            json["started"],
-            datetime.datetime.fromtimestamp(json["started_time"]),
-            GameMode[json["type"]],
-            self.database,
-            json["opponent_id"],
-            json["score"],
-            json["ended"],
+            identifier=json["id"],
+            owner=None if json["owner"] is None else User(json["owner"], self.database),
+            started=json["started"],
+            started_time=datetime.datetime.fromtimestamp(json["started_time"]),
+            game_mode=GameMode[json["type"]],
+            database=self.database,
+            opponent_id=json["opponent_id"],
+            score=json["score"],
+            ended=json["ended"],
         )
 
     def to_json(self, game: Game) -> dict:

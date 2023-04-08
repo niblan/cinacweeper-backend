@@ -1,10 +1,12 @@
 """The base game class."""
 from __future__ import annotations
 
+import datetime
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from .exceptions import GameEndedError, GameNotStarted, SelfPlayerException
+from .exceptions import (GameEndedError, GameNotStartedError,
+                         PlayingAgainstSelfError)
 from .minesweeper import main
 
 if TYPE_CHECKING:
@@ -52,7 +54,7 @@ class Game:
         if self.ended:
             raise GameEndedError
         if not self.started:
-            raise GameNotStarted
+            raise GameNotStartedError
         state = self.state
         game_move = main(
             state.gameboard,
@@ -87,7 +89,7 @@ class Game:
         opponent_game = self.database.get_game(self.opponent_id)
 
         if opponent_game.owner and user.identifier == opponent_game.owner.identifier:
-            raise SelfPlayerException
+            raise PlayingAgainstSelfError
 
         opponent_game.started = True
         opponent_game.started_time = datetime.datetime.now()
