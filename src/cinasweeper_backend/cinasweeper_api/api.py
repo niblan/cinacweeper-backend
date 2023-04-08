@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 # фром .сіна_дейтабез імпорт датабейз
 from ..cinasweeper_database import Database
 from ..cinasweeper_logic import Game as LogicGame  # {перелік класів}
-from ..cinasweeper_logic import GameEndedError, GameMode
+from ..cinasweeper_logic import GameEndedError, GameNotStarted, SelfPlayerException, GameMode
 from ..cinasweeper_logic import GameState as LogicGameState
 from ..cinasweeper_logic import Move, User
 from .authentication import AuthManager
@@ -20,13 +20,10 @@ from .authentication import AuthManager
 
 def get_conf_value(key: str) -> str:
     """Get a value from the config file
-
     Args:
         key (str): The key to get the value from
-
     Raises:
         KeyError: If the key doesn't exist
-
     Returns:
         str: The value
     """
@@ -72,10 +69,8 @@ class Game:
     @classmethod
     def from_logic(cls, game: LogicGame) -> "Game":
         """Convert a logic game to the API game
-
         Args:
             game (LogicGame): The logic game
-
         Returns:
             Game: The API game
         """
@@ -104,10 +99,8 @@ class GameState:
     ) -> List[List[Optional[int]]]:  # save only opend ceils (tuples -> None)
         """Convert a gameboard to a board that can be sent to the client
         (remove all unopened cells)
-
         Args:
             state (LogicGameState): The gameboard
-
         Returns:
             List[List[Optional[int]]]: The board
         """
@@ -124,11 +117,9 @@ class GameState:
     @classmethod
     def from_logic(cls, state: LogicGameState, full: bool = False) -> "GameState":
         """Convert a logic game to the API game state
-
         Args:
             state (LogicGameState): The logic game state
             full (bool): Whether to send the full board or not.
-
         Returns:
             GameState: The API game state
         """
@@ -146,13 +137,10 @@ class UnauthorizedMessage:
 
 def user_from_jwt(jwt: str) -> User:
     """Get the user object from a JWT
-
     Args:
         jwt (str): The JWT to get the user id and user object from
-
     Raises:
         HTTPException: If the JWT is invalid
-
     Returns:
         User: The user object
     """
@@ -167,13 +155,10 @@ async def get_token(
     authorization: str = Header(default="Bearer "),
 ) -> User:
     """Get the user id and user object from the authorization header
-
     Args:
         authorization (str): The authorization header.
-
     Raises:
         HTTPException: If the authorization header is invalid
-
     Returns:
         User: The user object
     """
@@ -261,8 +246,9 @@ def post_move(game_id: str, move: Move, user: User = Depends(get_token)) -> Game
         game.play_move(move)
     except GameEndedError:
         raise HTTPException(409, "Game over.")
+    except GameNotStarted:
+        raise HTTPException(404, "Game is not started.")
+    except SelfPlayerException:
+        raise HTTPException(400, "You can`t play against yourself.")
 
     return GameState.from_logic(game.state, game.ended)
-
-
-# розібратися з імпортом дата
