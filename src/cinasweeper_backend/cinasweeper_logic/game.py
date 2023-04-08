@@ -4,7 +4,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
-from .exceptions import GameEndedError, GameNotStarted
+from .exceptions import GameEndedError, GameNotStarted, SelfPlayerException
 from .minesweeper import main
 
 if TYPE_CHECKING:
@@ -78,6 +78,8 @@ class Game:
         Args:
             user (User): The user to assign the game to.
         """
+        if self.identifier == self.opponent_id:
+            raise SelfPlayerException
         if self.owner is None:
             self.owner = user
             self.started = True

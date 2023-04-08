@@ -16,5 +16,10 @@ class GameNotFoundError(Exception):
         """
         super().__init__(f"Game with id {identifier} not found")
 
+
 class GameNotStarted(Exception):
     """The game was not started"""
+
+
+class SelfPlayerException(Exception):
+    """A player cannot play against himself in 1v1 mode."""
