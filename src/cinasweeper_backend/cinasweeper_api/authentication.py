@@ -10,10 +10,11 @@ from firebase_admin import auth, credentials
 class AuthManager:
     """Manage the authentication of users"""
 
-    def __init__(self) -> None:
+    def __init__(self, restrict_users: bool = False) -> None:
         """Initialize the AuthManager"""
         self.cred = credentials.Certificate("serviceAccountKey.json")
         firebase_admin.initialize_app(self.cred)
+        self.restrict_users = restrict_users
 
     def validate(self, email: str) -> bool:
         """Validate the email of a user
@@ -24,7 +25,10 @@ class AuthManager:
         Returns:
             bool: True if the email is fron ucu, False otherwise
         """
-        return bool(re.match(r"^[a-z.]+\.pn@ucu\.edu\.ua$", email))
+        return (
+            bool(re.match(r"^[a-z.]+\.pn@ucu\.edu\.ua$", email))
+            or not self.restrict_users
+        )
 
     def verify(self, token: str) -> dict[str, str] | None:
         """Verify a jwt token
@@ -40,7 +44,7 @@ class AuthManager:
         except Exception:
             return None
         email = user["email"]
-        if True or self.validate(email):
+        if self.validate(email):
             return user
         return None
 
