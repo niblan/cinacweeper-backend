@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
 from .exceptions import (GameEndedError, GameNotStartedError,
-                         PlayingAgainstSelfError)
+                         PlayingAgainstSelfError, CellAlreadyOpenError)
 
 if TYPE_CHECKING:
     import datetime
@@ -60,13 +60,15 @@ class Game:
             raise GameNotStartedError
         state = self.state
         game_move = state.play_move(move)
+        if game_move == 'Open':
+            raise CellAlreadyOpenError
         self.database.save_game_state(self.identifier, state)
         if game_move in ["Win", "Lose"]:
             if game_move == "Win":
                 time = int(
                     (datetime.datetime.now() - self.started_time).total_seconds()
                 )
-                self.score = int(((1 / time) * 100) ** 2)
+                self.score = int(((1 / time) * 1000) ** 2)
             self.ended = True
             self.database.save_game(self)
             return True

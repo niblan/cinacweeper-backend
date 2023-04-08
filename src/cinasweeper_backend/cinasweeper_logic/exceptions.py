@@ -23,3 +23,8 @@ class GameNotStartedError(Exception):
 
 class PlayingAgainstSelfError(Exception):
     """A player cannot play against himself in 1v1 mode."""
+
+
+class CellAlreadyOpenError(Exception):
+    """The ceil is open, you can't flaged it"""
+

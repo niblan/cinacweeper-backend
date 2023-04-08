@@ -1,7 +1,7 @@
 """The logic of the game"""
 from .database import Database
 from .exceptions import (GameEndedError, GameNotStartedError,
-                         PlayingAgainstSelfError)
+                         PlayingAgainstSelfError, CellAlreadyOpenError)
 from .game import Game
 from .gamemode import GameMode
 from .gamestate import GameState
@@ -20,4 +20,5 @@ __all__ = [
     "GameEndedError",
     "GameNotStartedError",
     "PlayingAgainstSelfError",
+    "CellAlreadyOpenError"
 ]
