@@ -256,7 +256,7 @@ class RedisDatabase:
             ).identifier
         game = Game(
             identifier,
-            started=False,
+            started=gamemode == GameMode.SINGLEPLAYER,
             started_time=datetime.datetime.now(),
             owner=owner,
             database=self,

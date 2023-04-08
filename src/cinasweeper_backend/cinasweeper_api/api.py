@@ -12,9 +12,9 @@ from fastapi.middleware.cors import CORSMiddleware
 # фром .сіна_дейтабез імпорт датабейз
 from ..cinasweeper_database import Database
 from ..cinasweeper_logic import Game as LogicGame  # {перелік класів}
-from ..cinasweeper_logic import GameEndedError, GameNotStarted, SelfPlayerException, GameMode
+from ..cinasweeper_logic import GameEndedError, GameMode, GameNotStarted
 from ..cinasweeper_logic import GameState as LogicGameState
-from ..cinasweeper_logic import Move, User
+from ..cinasweeper_logic import Move, SelfPlayerException, User
 from .authentication import AuthManager
 
 
