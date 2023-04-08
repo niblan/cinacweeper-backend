@@ -42,7 +42,7 @@ class Game:
         """
         return self.database.get_game_state(self.identifier)
 
-    def play_move(self, move: Move) -> None:
+    def play_move(self, move: Move) -> bool:
         """Plays a move on the game board based on the given Move object.
 
         Args:
@@ -50,6 +50,9 @@ class Game:
 
         Raises:
             GameEndedError: If the game has already ended.
+
+        Returns:
+            bool: True if the state of the game has changed, False otherwise.
         """
         if self.ended:
             raise GameEndedError
@@ -63,6 +66,7 @@ class Game:
             move.action,
             (move.x, move.y),
         )
+        self.database.save_game_state(self.identifier, state)
         if game_move in ["Win", "Lose"]:
             if game_move == "Win":
                 time = int(
@@ -71,7 +75,8 @@ class Game:
                 self.score = int(((1 / time) * 100) ** 2)
             self.ended = True
             self.database.save_game(self)
-        self.database.save_game_state(self.identifier, state)
+            return True
+        return False
 
     def claim(self, user: User) -> None:
         """Assigns the game to the specified user if the game has no owner.

@@ -131,6 +131,14 @@ class GameState:
 
 
 @dataclass
+class MoveResult:
+    """The result of a move"""
+
+    state: GameState
+    game_changed: bool
+
+
+@dataclass
 class UnauthorizedMessage:
     """The message to send when the user is unauthorized"""
 
@@ -242,16 +250,17 @@ def put_game(game_id: str, user: User = Depends(get_token)) -> Game:
     "/games/{game_id}/moves",
     responses={401: dict(model=UnauthorizedMessage)},
 )
-def post_move(game_id: str, move: Move, user: User = Depends(get_token)) -> GameState:
+def post_move(game_id: str, move: Move, user: User = Depends(get_token)) -> MoveResult:
     """Make a move on a specific game; you must be the owner of the game"""
     game = database.get_game(game_id)
     if game.owner != user:
         raise HTTPException(403, "You are not the owner of this game.")
     try:
-        game.play_move(move)
+        game_changed = game.play_move(move)
     except GameEndedError:
         raise HTTPException(409, "Game over.")
     except GameNotStartedError:
         raise HTTPException(404, "Game is not started.")
 
-    return GameState.from_logic(game.state, game.ended)
+    state = GameState.from_logic(game.state, game.ended)
+    return MoveResult(state, game_changed)
