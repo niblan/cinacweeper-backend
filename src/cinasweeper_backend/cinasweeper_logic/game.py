@@ -68,7 +68,7 @@ class Game:
                 time = int(
                     (datetime.datetime.now() - self.started_time).total_seconds()
                 )
-                self.score = int(((1 / time) * 1000) ** 2)
+                self.score = int(((1 / time) * 10000) ** 2)
             self.ended = True
             self.database.save_game(self)
             return True
