@@ -105,6 +105,8 @@ def check_ceil(board: list[list], info_board: list[list], step: tuple, zeros):
     Set a value to the ceil.
     Return None.
     """
+    if board[step[0]][step[1]] == "F":
+        return "FLAG"
     if not info_board[step[0]][step[1]]:  # if 0 open 0s around
         board[step[0]][step[1]] = 0
         zeros.append(step)  # mark the ceil like already checked
