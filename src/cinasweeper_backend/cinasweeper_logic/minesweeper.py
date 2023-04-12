@@ -144,8 +144,11 @@ def check_win(
     flags_on_mines = 0
     for x, row in enumerate(board):
         for y, ceil in enumerate(row):  # ceil in mines
-            if ceil == "F" and [x, y] in mines:
-                flags_on_mines += 1
+            if ceil == "F":
+                if [x, y] in mines:
+                    flags_on_mines += 1
+                else:
+                    return False
     return flags_on_mines == len(mines)
 
 
