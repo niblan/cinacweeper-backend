@@ -38,7 +38,9 @@ def set_mines(height: int, width: int, num_mines: int, step: tuple[int, int]) ->
     mines: set[tuple[int, int]] = set()
     while len(mines) < num_mines:
         mines.add((randint(0, height - 1), randint(0, width - 1)))
-        mines.discard(step)  # ignore the coordinates
+        for x in range(step[0] - 1, step[0] + 2):
+            for y in range(step[1] - 1, step[1] + 2):
+                mines.discard((x, y))
     return list(mines)
 
     # number of mines around
